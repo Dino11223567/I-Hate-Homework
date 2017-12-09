@@ -4,18 +4,51 @@ import re
 from robobrowser import RoboBrowser
 import urllib.request
 import urllib.parse
+#Lists
+questions =["Cómo se llamaba el reino de Fernando antes de unificar España?","En qué año empezó la Reconquista?","En qué ciudad terminó la Reconquista?","Quién lideró la Batalla de Covadonga?",'Qué tipo de rima se emplea en los romances? ',"Quién tiene la culpa de la pérdida de Alhama?","Cómo se llamaba el reino de Isabel antes de unificar España?","Cuál fue la ciudad capital del Reino Visigodo en la península ibérica? ","Quién causó la extinción de los idiomas indígenas en la península ibérica?",'Cuál es el tono del “Romance de la pérdida de Alhama”?',"Cómo se llamaba el territorio musulmán en la península?","Cuáles son los tres temas de los romances? (orden alfabético)",'Quién es el receptor de “Romance de la pérdida de Alhama”? ',"Cómo se llaman los Reyes Católicos? (orden alfabético)","Quienes tomó control peninsular de los romanos?","Cómo se llamaban los pueblos en la peninsula antes de la invasión romana? (orden alfabético)","Qué batalla comenzó la Reconquista? ","Cuántas sílabas tiene cada verso en un romance? ","En qué año terminó la Reconquista?","Cómo se llama un verso con ocho sílabas?"]
+answers =[ "Aragón","722","Granada","Don Pelayo","Rima asonante","El rey moro","Castilla","Toledo","Los romanos","Triste","al-Ándalus","El amor, la guerra, la religión","Los musulmanes","Fernando II, Isabel I","Los visigodos","Los celtas, los fenicios, los griegos, los iberos","Batalla de Covadonga","Ocho","1492","Octosílabo"]
 #Getting the HTML
-s = requests.Session()
-s.headers['User-Agent'] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36" 
-br = RoboBrowser(session = s, history =True)
-br.open("http://rdominguez.pythonanywhere.com/")
 
-print(br.parsed)
+Times = int( input("HOW MANY TIMES WOULD YOU LIKE TO RUN THE PROGRAM? "))
+
+a = Times
+print("<======================BEGIN====================>")
+while  a >0:
+
+    print(str(a) + " Times Remaining")
+    s = requests.Session()
+    s.headers['User-Agent'] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36" 
+    br = RoboBrowser(session = s, history =True,parser='html.parser')
+    br.open("http://rdominguez.pythonanywhere.com/login")
+    login_form = br.get_form()
+    login_form["email"]= "Username"
+    login_form["password"]="Password"
+    br.submit_form(login_form)
 
 
-#Suppose to give me the average
-"""start = '>'
-end = "<"
-result = re.search('%s(.*)%s' % (start,end), src).group(1) 
-print(result)"""
+    #GET TO THE QUIZ
+    br.open("http://rdominguez.pythonanywhere.com/quizzes/confirmation/8/31#")
+    confirmation_form= br.get_form()
+    confirmation_form["on_or_off"].value=["y"]
+    br.submit_form(confirmation_form)
+    question_link = br.get_link("Let's Play Siglo XV!")
+    br.follow_link(question_link)
+    #FIND THE QUESTION
 
+    i = 20
+    while i>0:
+        print("Number "+str(i))
+        src = str(br.parsed())
+        start1 ="¿"
+        end1 = "?<"
+        result = re.search('%s(.*)%s' % (start1,end1), src).group(1) 
+        print(str(result))
+        question_index=questions.index(result)
+        print("The answer is " + answers[question_index])
+        question_form = br.get_form()
+        question_form["user_answer"]=answers[question_index]
+        br.submit_form(question_form)
+        i=i-1 
+    print("<=============END OF QUIZ==============>")
+    a=a-1
+print("You earned "+str(Times*20) +" points!")
